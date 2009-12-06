@@ -37,21 +37,20 @@ class ODSReader
     index = 0
     has_value = false
     row.elements.each('table:table-cell') do |cell|
-      colreps = cell.attributes['table:number-columns-repeated']
-      unless colreps
-        unless cell.has_elements?
-          colreps = '1'
-        end
+      if cell.has_elements?
+        cols[index] = cell.elements['text:p'].text
+        has_value = true
+      else
+        cols[index] = ''
       end
+      colreps = cell.attributes['table:number-columns-repeated']
       if colreps
         colreps.to_i.times do |num|
-          cols[index] = ''
-          index = index + 1
+          cols[index + num] = cols[index]
         end
+        index = index + colreps.to_i
       else
-        cols[index] = cell.elements['text:p'].text
         index = index + 1
-        has_value = true
       end
     end
     rowreps.times do |num|
