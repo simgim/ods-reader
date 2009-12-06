@@ -37,8 +37,9 @@ class ODSReader
     index = 0
     has_value = false
     row.elements.each('table:table-cell') do |cell|
-      if cell.has_elements?
-        cols[index] = cell.elements['text:p'].text
+      tv = typed_value cell
+      if tv
+        cols[index] = tv
         has_value = true
       else
         cols[index] = ''
@@ -58,6 +59,23 @@ class ODSReader
         block.call(cols)
       elsif !skip_empty_row
         block.call(cols)
+      end
+    end
+  end
+
+  private
+  def typed_value(cell)
+    case cell.attributes['office:value-type']
+    when nil then nil
+    when 'date'
+      cell.attributes['office:date-value']
+    when 'currency', 'float'
+      cell.attributes['office:value']
+    else
+      if cell.has_elements?
+        cell.elements['text:p'].text
+      else
+        nil
       end
     end
   end
